@@ -33,25 +33,6 @@ def suggest_platform(score):
         return "LinkedIn"
     return "Instagram Reels"
 
-def determine_platform_from_creator(creator, score):
-    """Determine platform based on the feed `creator` name when possible.
-
-    Falls back to a score-based suggestion when the creator isn't recognizable.
-    """
-    if not creator:
-        return suggest_platform(score)
-
-    c = creator.lower()
-    if 'twitter' in c or 'x_' in c or c.startswith('x') or 'rsshub.app/twitter' in c:
-        return 'X / Twitter'
-    if 'newsletter' in c or 'substack' in c or 'mail' in c:
-        return 'Newsletter'
-    if 'youtube' in c or 'feeds/videos.xml' in c or 'yt' in c:
-        return 'YouTube'
-    if 'instagram' in c or 'insta' in c:
-        return 'Instagram'
-    return suggest_platform(score)
-
 def generate_script(title, summary):
     return f"""
 {title} is making headlines.
@@ -77,12 +58,10 @@ def analyze_articles(all_articles):
     results = []
 
     for article in all_articles:
-        title = article.get("title", "")
-        summary = article.get("summary", "")
-        text = title + " " + summary
+        text = article["title"] + " " + article["summary"]
         keywords = extract_keywords(text)
 
-        trend_score = sum(keyword_counts.get(k, 0) for k in keywords[:5])
+        trend_score = sum(keyword_counts[k] for k in keywords[:5])
 
         if trend_score > 20:
             trend_label = "Emerging Trend"
@@ -91,7 +70,7 @@ def analyze_articles(all_articles):
         else:
             trend_label = "Low Momentum"
 
-        viral_score = calculate_viral_score(title)
+        viral_score = calculate_viral_score(article["title"])
         sentiment = analyze_sentiment(text)
 
         intelligence_score = round(
@@ -101,17 +80,15 @@ def analyze_articles(all_articles):
             2
         )
 
-        creator = article.get("creator") or article.get("author") or article.get("feed")
-
         results.append({
-            "Creator": creator,
-            "Topic": title,
-            "Post Link": article.get("link"),
+            "Creator": article["creator"],
+            "Topic": article["title"],
+            "Post Link": article["link"],
             "Viral Rating": viral_score,
             "Trend Strength": trend_label,
             "Sentiment": sentiment,
-            "Platform": determine_platform_from_creator(creator, viral_score),
-            "Draft Script": generate_script(title, summary),
+            "Platform": suggest_platform(viral_score),
+            "Draft Script": generate_script(article["title"], article["summary"]),
             "Intelligence Score": intelligence_score,
             "Date": datetime.now().strftime("%Y-%m-%d"),
             "Status": "New"
