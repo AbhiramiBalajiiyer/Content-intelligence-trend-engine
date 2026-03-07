@@ -125,10 +125,22 @@ if st.session_state['df'] is not None:
 
     # Chart Section
 
-    st.subheader("Intelligence Score Distribution")
+    st.subheader("Average Intelligence Score by Creator")
 
-    st.bar_chart(filtered_df.set_index("Title")["Intelligence Score"])
+    if not filtered_df.empty:
 
+        creator_scores = (
+            filtered_df
+            .groupby("Creator")["Intelligence Score"]
+            .mean()
+            .sort_values(ascending=False)
+        )
+
+        st.bar_chart(creator_scores)
+
+    else:
+        st.warning("No data available for chart.")
+        
     st.divider()
 
     # Download Button
@@ -141,6 +153,12 @@ if st.session_state['df'] is not None:
         file_name="content_intelligence_analysis.csv",
         mime="text/csv",
     )
+
+    # Debug: show loaded creators from the stored DataFrame (safe)
+    try:
+        st.write("Feeds loaded:", df['Creator'].dropna().unique().tolist()[:10])
+    except Exception:
+        pass
 
 else:
     st.info("Click \"Run Analysis\" to fetch articles and enable filters.")
