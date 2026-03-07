@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/Users/abhiramibalajiiyer/Desktop/Personal/Content-intelligence-trend-engine/app.py", line 165, in main
+    csv = filtered_df.to_csv(index=False)
+          ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'filtered_df' where it is not associated with a value
