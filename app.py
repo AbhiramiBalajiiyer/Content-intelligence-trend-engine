@@ -63,7 +63,7 @@ def main():
             # Top 5 Section
             st.subheader("Top 5 Content Opportunities")
             top5 = df.head(5)
-            st.dataframe(top5, width='stretch')
+            st.dataframe(top5, use_container_width=True)
 
             st.divider()
 
@@ -99,7 +99,7 @@ def main():
 
             # Full Ranked Table
             st.subheader("Ranked Content Opportunities")
-            st.dataframe(filtered_df, width='stretch')
+            st.dataframe(filtered_df, use_container_width=True)
 
             st.divider()
 
