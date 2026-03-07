@@ -4,6 +4,27 @@ from config import RSS_FEEDS
 from rss_fetcher import fetch_articles
 from analyzer import analyze_articles
 
+
+# ---------------------------
+# Clean Creator Name
+# ---------------------------
+def clean_creator_name(name):
+    name = str(name)
+
+    prefixes = [
+        "YouTube - ",
+        "Instagram - ",
+        "Twitter - ",
+        "X - "
+    ]
+
+    for p in prefixes:
+        if name.startswith(p):
+            return name.replace(p, "").strip()
+
+    return name
+
+
 st.set_page_config(
     page_title="Content Intelligence & Trend Prioritization Engine",
     layout="wide"
@@ -24,11 +45,18 @@ if st.button("Run Analysis"):
     all_articles = []
 
     for name, url in RSS_FEEDS.items():
-        all_articles.extend(fetch_articles(name, url))
+        articles = fetch_articles(name, url)
+
+        # Clean creator names before adding
+        for a in articles:
+            a["creator"] = clean_creator_name(name)
+
+        all_articles.extend(articles)
 
     results = analyze_articles(all_articles)
 
     df = pd.DataFrame(results)
+
     st.session_state['df'] = df
 
     st.success("Analysis Complete")
@@ -71,14 +99,9 @@ if st.session_state['df'] is not None:
 
     colA, colB, colC = st.columns(3)
 
-    # normalize values to strings and strip whitespace
-    df['Creator'] = df['Creator'].fillna('Unknown').astype(str).str.strip()
-    df['Sentiment'] = df['Sentiment'].fillna('Unknown').astype(str).str.strip()
-    df['Trend Strength'] = df['Trend Strength'].fillna('Unknown').astype(str).str.strip()
-
-    creator_options = ["All"] + sorted(df["Creator"].unique().tolist())
-    sentiment_options = ["All"] + sorted(df["Sentiment"].unique().tolist())
-    trend_options = ["All"] + sorted(df["Trend Strength"].unique().tolist())
+    creator_options = ["All"] + sorted(df["Creator"].dropna().unique().tolist())
+    sentiment_options = ["All"] + sorted(df["Sentiment"].dropna().unique().tolist())
+    trend_options = ["All"] + sorted(df["Trend Strength"].dropna().unique().tolist())
 
     creator_filter = colA.selectbox("Filter by Creator", creator_options)
     sentiment_filter = colB.selectbox("Filter by Sentiment", sentiment_options)
@@ -87,29 +110,24 @@ if st.session_state['df'] is not None:
     filtered_df = df.copy()
 
     if creator_filter != "All":
-        filtered_df = filtered_df[filtered_df["Creator"] == creator_filter]
+        filtered_df = filtered_df.loc[filtered_df["Creator"] == creator_filter]
 
     if sentiment_filter != "All":
-        filtered_df = filtered_df[filtered_df["Sentiment"] == sentiment_filter]
+        filtered_df = filtered_df.loc[filtered_df["Sentiment"] == sentiment_filter]
 
     if trend_filter != "All":
-        filtered_df = filtered_df[filtered_df["Trend Strength"] == trend_filter]
+        filtered_df = filtered_df.loc[filtered_df["Trend Strength"] == trend_filter]
 
-    st.divider()
-
-    # Full Ranked Table
-
-    st.subheader("Ranked Content Opportunities")
-
-    st.dataframe(filtered_df, use_container_width=True)
-
-    st.divider()
+    if filtered_df.empty:
+        st.warning("No articles match the selected filters.")
+    else:
+        st.dataframe(filtered_df, use_container_width=True)
 
     # Chart Section
 
     st.subheader("Intelligence Score Distribution")
 
-    st.bar_chart(filtered_df["Intelligence Score"])
+    st.bar_chart(filtered_df.set_index("Title")["Intelligence Score"])
 
     st.divider()
 
@@ -123,5 +141,6 @@ if st.session_state['df'] is not None:
         file_name="content_intelligence_analysis.csv",
         mime="text/csv",
     )
+
 else:
     st.info("Click \"Run Analysis\" to fetch articles and enable filters.")
