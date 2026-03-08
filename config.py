@@ -1,4 +1,3 @@
-# config.py
 import os
 RSS_FEEDS = {
     # YouTube Channels
@@ -18,11 +17,6 @@ RSS_FEEDS = {
 
 ARTICLES_PER_FEED = 5  
 
-# # Slack Webhook
-# SLACK_WEBHOOK = "https://hooks.slack.com/services/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"
-
-# # Google Sheet webhook
-# GOOGLE_SHEET_WEBHOOK = "https://script.google.com/macros/s/AKfycbzrtWrK-ThSHLLJyLH7P_nFKzMUCPCpFyl2oKWPEdBzcRUR_fi55XG6dD2iNwj8o8bW/exec"
 # Slack Webhook
 SLACK_WEBHOOK = os.getenv("SLACK_WEBHOOK")
 

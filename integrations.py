@@ -1,4 +1,3 @@
-# integrations.py
 import requests
 from config import SLACK_WEBHOOK, GOOGLE_SHEET_WEBHOOK
 
@@ -16,7 +15,9 @@ def send_to_slack(top_articles_list):
     requests.post(SLACK_WEBHOOK, json={"text": text})
 
 def send_to_google_sheet(article):
+    """Send one article to Google Sheet webhook"""
     if not GOOGLE_SHEET_WEBHOOK:
+        print("⚠️ GOOGLE_SHEET_WEBHOOK not set")
         return
 
     payload = {
@@ -29,5 +30,6 @@ def send_to_google_sheet(article):
     try:
         response = requests.post(GOOGLE_SHEET_WEBHOOK, json=payload, timeout=10)
         response.raise_for_status()
+        print(f"✅ Sent to Google Sheet: {article.get('Title')}")
     except Exception as e:
         print("Google Sheet POST error:", e)

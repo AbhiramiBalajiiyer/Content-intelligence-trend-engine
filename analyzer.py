@@ -2,9 +2,7 @@
 from textblob import TextBlob
 from datetime import datetime
 
-# ---------------------------
 # Helper Functions
-# ---------------------------
 def detect_platform(source_url):
 
     if not source_url:
@@ -52,9 +50,7 @@ def calculate_viral_score(title):
     bonus = sum(2 for w in sensational if w in title.lower())
     return min(10, round(base + bonus))
 
-# ---------------------------
 # Main Analysis Function
-# ---------------------------
 def analyze_articles(articles):
     results = []
 

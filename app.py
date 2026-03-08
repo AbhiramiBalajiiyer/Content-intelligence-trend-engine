@@ -7,9 +7,7 @@ from analyzer import analyze_articles
 from integrations import send_to_slack, send_to_google_sheet
 from datetime import datetime
 
-# ---------------------------
 # Streamlit Config
-# ---------------------------
 st.set_page_config(
     page_title="Content Intelligence & Trend Prioritization Engine",
     layout="wide"
@@ -21,15 +19,11 @@ st.write(
     "analyzes sentiment, scores viral potential, and prioritizes high-impact content opportunities."
 )
 
-# ---------------------------
 # Session State
-# ---------------------------
 if 'df' not in st.session_state:
     st.session_state['df'] = None
 
-# ---------------------------
 # Run Analysis Button
-# ---------------------------
 if st.button("Run Analysis", key="run_analysis"):
     all_articles = []
 
@@ -46,9 +40,7 @@ if st.button("Run Analysis", key="run_analysis"):
     st.session_state['df'] = df
     st.success("Analysis Complete")
 
-# ---------------------------
 # Display Data
-# ---------------------------
 if st.session_state['df'] is not None:
     df = st.session_state['df']
 
@@ -63,17 +55,18 @@ if st.session_state['df'] is not None:
 
     st.divider()
 
-    # ---------------------------
     # Top 5 Table
-    # ---------------------------
+    # --- Send Top 5 to Slack & Google Sheets ---
     st.subheader("Top 5 Content Opportunities")
     top5_df = df.head(5)
     st.dataframe(top5_df, use_container_width=True)
 
-    top5_list = top5_df.to_dict(orient="records")  # Convert to list of dicts for Slack / Sheets
+    # Convert to list of dicts for sending
+    top5_list = top5_df.to_dict(orient="records")  # list of dicts
 
     # Buttons to send Top 5
     colA, colB = st.columns(2)
+
     with colA:
         if st.button("Send Top 5 to Slack", key="send_slack"):
             if not top5_list:
@@ -88,14 +81,12 @@ if st.session_state['df'] is not None:
                 st.warning("No articles to send")
             else:
                 for article in top5_list:
-                    send_to_google_sheet(article)
+                    send_to_google_sheet(article)  # loop over dicts
                 st.success("Top 5 articles sent to Google Sheets!")
 
     st.divider()
 
-    # ---------------------------
     # Filters
-    # ---------------------------
     st.subheader("Filter Content")
     col1, col2, col3 = st.columns(3)
     creator_options = ["All"] + sorted(df["Creator"].dropna().unique().tolist())
@@ -114,9 +105,7 @@ if st.session_state['df'] is not None:
     if trend_filter != "All":
         filtered_df = filtered_df.loc[filtered_df["Trend Strength"] == trend_filter]
 
-    # ---------------------------
     # Ranked Table & Charts
-    # ---------------------------
     st.subheader("Ranked Content Opportunities")
     if filtered_df.empty:
         st.warning("No articles match the selected filters.")
@@ -132,9 +121,7 @@ if st.session_state['df'] is not None:
     if not filtered_df.empty:
         st.bar_chart(filtered_df["Platform"].value_counts())
 
-    # ---------------------------
     # Download CSV
-    # ---------------------------
     st.download_button(
         label="Download Analysis as CSV",
         data=filtered_df.to_csv(index=False),
