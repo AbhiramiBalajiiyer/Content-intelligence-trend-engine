@@ -5,9 +5,9 @@ import smtplib
 from email.mime.text import MIMEText
 from config import SLACK_WEBHOOK, GOOGLE_SHEET_WEBHOOK
 
-
 def send_to_slack(top_articles):
-    if SLACK_WEBHOOK == "":
+    if not SLACK_WEBHOOK:
+        print("⚠️ SLACK_WEBHOOK not set, skipping Slack notification")
         return
     text = "*Top AI Content Opportunities*\n"
     for article in top_articles:

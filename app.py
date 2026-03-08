@@ -54,6 +54,12 @@ if st.session_state['df'] is not None:
     # Top 5 table
     st.subheader("Top 5 Content Opportunities")
     st.dataframe(df.head(5), use_container_width=True)
+    
+    top5 = df.head(5)
+    if not top5.empty:
+        send_to_slack(top5)
+    else:
+        st.warning("No top 5 articles to send to Slack")
 
     st.divider()
 
