@@ -1,24 +1,21 @@
 # integrations.py
-
 import requests
-import smtplib
-from email.mime.text import MIMEText
 from config import SLACK_WEBHOOK, GOOGLE_SHEET_WEBHOOK
 
-def send_to_slack(top_articles):
-    if not SLACK_WEBHOOK:
-        print("⚠️ SLACK_WEBHOOK not set, skipping Slack notification")
+def send_to_slack(top_articles_list):
+    if not top_articles_list:  # works for lists
         return
-    text = "*Top AI Content Opportunities*\n"
-    for article in top_articles:
-        post_link = article.get("Post Link", article.get("link", "No Link"))
-        platform = article.get("Platform", "Website")
+
+    text = "*Top 5 AI Content Opportunities*\n\n"
+    for article in top_articles_list:
         title = article.get("Title", "No Title")
-        text += f"{title} ({platform})\n{post_link}\n\n"
+        link = article.get("Post Link", "No Link")
+        platform = article.get("Platform", "Website")
+        text += f"{title} ({platform})\n{link}\n\n"
+
     requests.post(SLACK_WEBHOOK, json={"text": text})
-    
+
 def send_to_google_sheet(article):
-    """Send one article to Google Sheet webhook"""
     if not GOOGLE_SHEET_WEBHOOK:
         return
 
