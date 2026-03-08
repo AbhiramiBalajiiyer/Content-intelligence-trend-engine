@@ -18,12 +18,19 @@ def send_to_slack(top_articles):
     requests.post(SLACK_WEBHOOK, json={"text": text})
     
 def send_to_google_sheet(article):
-    if GOOGLE_SHEET_WEBHOOK == "":
+    """Send one article to Google Sheet webhook"""
+    if not GOOGLE_SHEET_WEBHOOK:
         return
+
     payload = {
-        "title": article["Title"],
-        "platform": article["Platform"],
-        "score": article["Intelligence Score"],
-        "link": article["Post Link"]
+        "title": article.get("Title", ""),
+        "platform": article.get("Platform", ""),
+        "score": article.get("Intelligence Score", 0),
+        "link": article.get("Post Link", "")
     }
-    requests.post(GOOGLE_SHEET_WEBHOOK, json=payload)
+
+    try:
+        response = requests.post(GOOGLE_SHEET_WEBHOOK, json=payload, timeout=10)
+        response.raise_for_status()
+    except Exception as e:
+        print("Google Sheet POST error:", e)
